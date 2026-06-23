@@ -2,6 +2,10 @@
 
 A collection of modules dedicated to MIDI connection (Yamaha YDP 165 (Or another model with USB TO HOST port)
 
+<p align="center">
+  <img src="assets/midi-project.png" alt="MIDI Project" width="800">
+</p>
+
 ## 📂 Project Structure
 
 Yamaha piano <= USB => YAHOST (ESP32 S3 R8 ) <= Bluetooth => ... <= Bluetooth => YAMIDI (ESP32 with TFT screen)
