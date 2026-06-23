@@ -5,7 +5,7 @@ A collection of modules dedicated to MIDI connection (Yamaha YDP 165 (Or another
 https://youtu.be/uLcOu3TDA74
 <p align="center">
   <a href="https://youtu.be/uLcOu3TDA74">
-    <img src="assets/midi-project.png" alt="MIDI Project" width="800">
+    <img src="assets/video.png" alt="MIDI Project" width="800">
   </a>
 </p>
 <p align="center">
