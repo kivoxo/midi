@@ -3,7 +3,7 @@
 A collection of modules dedicated to MIDI connection (Yamaha YDP 165 (Or another model with USB TO HOST port)
 
 https://youtu.be/uLcOu3TDA74
-[![Voir la vidéo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=uLcOu3TDA74)
+[![display video](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=uLcOu3TDA74)
 
 <p align="center">
   <img src="assets/midi-project.png" alt="MIDI Project" width="800">
