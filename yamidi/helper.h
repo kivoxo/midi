@@ -8,6 +8,7 @@ static constexpr int NB_NOTE_OCTAVE = 12;  // BAUD
 class CMG_Helper {
 private:
   static constexpr int SERIAL_SPEED = 115200;  // BAUD
+
 public:
   static CMG_Helper& getInstance() {
     static CMG_Helper instance;

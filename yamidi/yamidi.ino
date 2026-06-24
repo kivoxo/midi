@@ -12,10 +12,9 @@
 #include "helper.h"
 #include "piano.h"
 #include "substain.h"
-#include "pianokey.h"
 #include "bluetooth.h"
 //
-static constexpr String TITLE = "MIDI VIEWER";
+#define TITLE "MIDI VIEWER"
 
 void setup() {
   CMG_Helper::getInstance().initSerial();

@@ -7,6 +7,7 @@
 #include <LovyanGFX.hpp>
 #include "esp32-hal-psram.h"
 #include "LGFX.h"
+
 //
 class CMG_Screen {
 public:
@@ -25,11 +26,18 @@ public:
   static constexpr int32_t CMG_WHITE_L3 = 0x00FFFFFFU;
 private:
     inline static LGFX lcd{};
+
+public:
     inline static LGFX_Sprite rollSprite{&lcd};
+
 public:
   static CMG_Screen& getInstance() {
     static CMG_Screen instance;
     return instance;
+  }
+
+  LGFX_Sprite* getRollSprite(){
+    return &rollSprite;
   }
 
   void setup() {

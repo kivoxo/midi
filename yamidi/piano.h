@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "pianokey.h"
+
 class CMG_Piano {
 private:
   static constexpr int PIANO_START_KEY_SHIFT = 21;
@@ -20,7 +22,10 @@ private:
     bool cutRight = false;
   };
   WhiteMask whiteMask[KEYBOARD_NB_WHITE_KEY];
-  Key keyboard[KEYBOARD_NB_KEY];
+  CMG_PianoKey::Key keyboard[KEYBOARD_NB_KEY];
+   static constexpr int MAX_KEY = 512;
+  uint8_t keys[MAX_KEY];
+
 private:
   void precomputeWhiteMask() {
     for (int i = 0; i < KEYBOARD_NB_WHITE_KEY; i++) {
@@ -40,6 +45,7 @@ private:
       }
     }
   }
+
 public:
   static CMG_Piano& getInstance() {
     static CMG_Piano instance;
@@ -64,6 +70,10 @@ public:
       }
     }
     precomputeWhiteMask();
+  }
+
+  void keyStatus(uint8_t midiNote, uint8_t keyStatus) {
+    keys[midiNote] = keyStatus;
   }
 
   void drawPiano() {

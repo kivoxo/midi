@@ -3,22 +3,25 @@
  * All rights reserved
  */
 #pragma once
+
+#include "spectre.h"
+
 class CMG_PianoKey {
-private:
-  static constexpr int MIDI_HISTORY_SIZE = 1024;
-  static constexpr int ROLL_X = 0;
-  static constexpr int ROLL_Y = 0;
-  static constexpr int ROLL_W = 200;
-  static constexpr int ROLL_H = 120;
-  static constexpr int MAX_KEY = 512;
-  //
+public:
   struct Key {
     bool isBlack;
     int whiteIndex;
     int blackLeftWhite;  // only for black keys
     int blackRightWhite;
   };
-  uint8_t keys[MAX_KEY];
+
+private:
+  static constexpr int MIDI_HISTORY_SIZE = 1024;
+  static constexpr int ROLL_X = 0;
+  static constexpr int ROLL_Y = 0;
+  static constexpr int ROLL_W = 200;
+  static constexpr int ROLL_H = 120;
+ 
   struct MidiNote {
     uint8_t note;
     uint8_t velocity;
@@ -26,13 +29,34 @@ private:
     uint32_t endTime;
     bool active;
   };
-  MidiNote midiHistory[MIDI_HISTORY_SIZE];
   uint16_t midiWriteIndex = 0;
   const uint32_t WINDOW_MS = 4000;
+  String noteReceived = "...";
+  String octaveReceived = "";
+  String velocityReceived = "..";
+  uint8_t velocityValueReceived = 0;
+  MidiNote midiHistory[MIDI_HISTORY_SIZE];
+
+private:
+  uint32_t nowMs() {
+    return millis();
+  }
+
 public:
   static CMG_PianoKey &getInstance() {
     static CMG_PianoKey instance;
     return instance;
+  }
+  
+  void midiToNote(uint8_t midiNote, uint8_t velocity) {
+    velocityReceived = String(velocity);
+    velocityValueReceived = velocity;
+    const char *notes[] = { "Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si" };
+    uint8_t noteIndex = midiNote % NB_NOTE_OCTAVE;
+    // Yamaha offset (Middle Do  = 60 -> Do3)
+    int octave = (midiNote / NB_NOTE_OCTAVE) - 2;
+    octaveReceived = String(octave);
+    noteReceived = String(notes[noteIndex]);
   }
 
   void drawLogMidiNotesHistoric() {
@@ -44,7 +68,7 @@ public:
       int idx = (midiWriteIndex - 1 - k + MIDI_HISTORY_SIZE) % MIDI_HISTORY_SIZE;
       MidiNote &n = midiHistory[idx];
       if (n.startTime == 0) {
-        CMG_Screen::getInstance().drawString(" --- ", 8 * nbChar * k, histPosY, 1, CMG_BLACK);
+        CMG_Screen::getInstance().drawString(" --- ", 8 * nbChar * k, histPosY, 1, CMG_Screen::CMG_BLACK);
         continue;
       }
       uint8_t noteIndex = n.note % 12;
@@ -91,11 +115,11 @@ public:
                                                                                         : CMG_Screen::CMG_WHITE_L1;
       CMG_Screen::getInstance().fillSpriteRect(left, y, w, h, color);
     }
-    rollSprite.pushSprite(0, 64);
+    CMG_Screen::getInstance().getRollSprite()->pushSprite(0, 64);
   }
 
   void drawLastNote() {
-    String noteText = fill(String(noteReceived + " " + octaveReceived), 9);
+    String noteText = CMG_Helper::getInstance().fill(String(noteReceived + " " + octaveReceived), 9);
     CMG_Screen::getInstance().drawString(noteText.c_str(), SCREEN_WIDTH / 2 - 8 * (noteText.length()) / 2, SCREEN_HEIGHT / 2 + 48 - 8, 2, CMG_Screen::CMG_WHITE);
     CMG_Screen::getInstance().drawString(CMG_Helper::getInstance().fill(String(velocityReceived), 3).c_str(), SCREEN_WIDTH - 3 * 16, SCREEN_HEIGHT / 2 + 48 - 8, 2, CMG_Screen::CMG_WHITE);
     // Velocity
@@ -107,8 +131,22 @@ public:
     // Filled part (bottom)
     CMG_Screen::getInstance().fillRect(barX + 1, barY + (maxH - level), barW, level, CMG_Screen::CMG_WHITE);
     // black remaining part (top)
-    CMG_Screen::getInstance().fillRect(barX + 1, barY, barW, maxH - level, CMG_BLACK);
+    CMG_Screen::getInstance().fillRect(barX + 1, barY, barW, maxH - level, CMG_Screen::CMG_BLACK);
     CMG_Screen::getInstance().fillRect(barX, barY, 1, maxH, CMG_Screen::CMG_WHITE);
+  }
+
+  void onMidiHistory(uint8_t note, uint8_t velocity) {
+    midiHistory[midiWriteIndex] = { note, velocity, nowMs(), 0, true };
+    midiWriteIndex = (midiWriteIndex + 1) % MIDI_HISTORY_SIZE;
+  }
+
+  int offMidiHistory(uint8_t note) {
+    int idx = findActiveNote(note);
+    if (idx != -1) {
+      midiHistory[idx].endTime = nowMs();
+      midiHistory[idx].active = false;
+    }
+    return idx;
   }
 
 private:
@@ -119,22 +157,5 @@ private:
       }
     }
     return -1;
-  }
-
-  void pushNoteOn(uint8_t note, uint8_t velocity) {
-    midiHistory[midiWriteIndex] = { note, velocity, nowMs(), 0, true };
-    midiWriteIndex = (midiWriteIndex + 1) % MIDI_HISTORY_SIZE;
-    midiLevels[note] = velocity;
-    midiToTargets();
-  }
-
-  void pushNoteOff(uint8_t note) {
-    int idx = findActiveNote(note);
-    if (idx != -1) {
-      midiHistory[idx].endTime = nowMs();
-      midiHistory[idx].active = false;
-      midiLevels[note] = 0;
-      midiToTargets();
-    }
   }
 };

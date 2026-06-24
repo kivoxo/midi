@@ -10,19 +10,28 @@ private:
   static constexpr int BANDS_HEIGHT = 64;
   static constexpr int MAX_NOTE_VALUE = 80;
   static constexpr int MAX_NB_NOTE = 128;
-  //
+  static constexpr float stiffness = 0.15f;  // stiffness
+  static constexpr float damping = 0.80f;    // damping
+  static constexpr float decay = 0.98f;      // decay
   float bandHeight[BANDS];
   float bandVelocity[BANDS];
   float bandTarget[BANDS];
   uint8_t midiLevels[MAX_NB_NOTE] = { 0 };
-  //
-  void midiToTargets() {
+
+public:
+  static CMG_Spectre& getInstance() {
+    static CMG_Spectre instance;
+    return instance;
+  }
+
+  void midiToTargets(uint8_t note, uint8_t velocity) {
+    midiLevels[note] = velocity;
     // reset targets
     for (int i = 0; i < BANDS; i++) {
       bandTarget[i] = 0;
     }
     for (int note = 0; note < MAX_NB_NOTE; note++) {
-      int band = map(note, 0, MAX_NB_NOTE-1, 0, BANDS - 1);
+      int band = map(note, 0, MAX_NB_NOTE - 1, 0, BANDS - 1);
       bandTarget[band] += midiLevels[note];
     }
     // clamp
@@ -44,16 +53,8 @@ private:
       CMG_Screen::getInstance().fillRect(posx + x, posy + y, barW - 2, barH, CMG_Screen::CMG_WHITE);
     }
   }
-public:
-  static CMG_Spectre& getInstance() {
-    static CMG_Spectre instance;
-    return instance;
-  }
 
   void updateBands() {
-    float stiffness = 0.15f;  // force du ressort
-    float damping = 0.80f;    // perte énergie (rebond)
-    float decay = 0.98f;      // disparition lente
     for (int i = 0; i < BANDS; i++) {
       float force = (bandTarget[i] - bandHeight[i]) * stiffness;
       bandVelocity[i] += force;
@@ -62,8 +63,12 @@ public:
       // si plus de note → retour progressif à zéro
       bandTarget[i] *= decay;
       // sécurité
-      if (bandHeight[i] < 0) bandHeight[i] = 0;
-      if (bandHeight[i] > MAX_NOTE_VALUE) bandHeight[i] = MAX_NOTE_VALUE;
+      if (bandHeight[i] < 0){
+        bandHeight[i] = 0;
+      }
+      if (bandHeight[i] > MAX_NOTE_VALUE) {
+        bandHeight[i] = MAX_NOTE_VALUE;
+      }
     }
   }
 
